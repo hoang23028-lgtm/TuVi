@@ -8,9 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "verify": "tsx scripts/verify-cases.ts"
+    "verify": "tsx scripts/verify-cases.ts",
+    "verify:lunar": "tsx scripts/verify-lunar.ts"
   },
   "dependencies": {
+    "@baostudio/viet-lunar": "^0.1.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "lucide-react": "^0.400.0",

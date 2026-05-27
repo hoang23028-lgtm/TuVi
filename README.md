@@ -5,7 +5,7 @@
 ## Tính năng
 
 - Lập lá số 12 cung: 14 chính tinh, phụ tinh, Tràng Sinh, Tứ Hóa
-- Quy đổi dương lịch → âm lịch (1900–2099, hỗ trợ tháng nhuận)
+- Quy đổi dương lịch → âm lịch (thư viện `@baostudio/viet-lunar`, UTC+7, khớp Tết VN)
 - Luận giải từng cung, tổng quan (tính cách, sự nghiệp, tài lộc, tình cảm)
 - Đại Hạn & Tiểu Hạn theo năm
 - Nhập ngày **âm lịch** hoặc dương lịch (hỗ trợ tháng nhuận)
