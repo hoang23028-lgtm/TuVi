@@ -388,8 +388,8 @@ export function tinhLaSo(
   // 9. Khởi tạo 12 cung
   const cungs: Cung[] = [];
   for (let i = 0; i < 12; i++) {
-    // Xác định tên cung dựa trên vị trí so với Cung Mệnh
-    const cungIndex = (cungMenhViTri - i + 12) % 12;
+    // Tên cung: từ Mệnh đếm thuận theo địa chi (Mệnh tại menh → Phụ Mẫu tại menh+1, …)
+    const cungIndex = (i - cungMenhViTri + 12) % 12;
     cungs.push({
       name: CUNG_VI_TRI[cungIndex],
       diaChi: DIA_CHI[i],

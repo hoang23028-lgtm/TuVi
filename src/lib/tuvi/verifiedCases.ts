@@ -24,6 +24,23 @@ export interface VerifiedCase {
 
 export const VERIFIED_CASES: VerifiedCase[] = [
   {
+    id: 'ref-giap-than-2004',
+    moTa: 'Ảnh TRA CỨU — Giáp Thân, tháng 4 âm, giờ Tuất (Mệnh Mùi, Tử Vi tại Tỵ)',
+    hoTen: 'Mẫu TRA CỨU',
+    gioiTinh: 'Nữ',
+    solar: { y: 2004, m: 5, d: 26 },
+    gioSinh: 10,
+    amLich: { year: 2004, month: 4, day: 8 },
+    expected: {
+      canNam: 'Giáp',
+      chiNam: 'Thân',
+      cuc: 'Thổ Ngũ Cục',
+      cungMenhDiaChi: 'Mùi',
+      tuan: ['Ngọ', 'Mùi'],
+      triet: ['Thân', 'Dậu'],
+    },
+  },
+  {
     id: 'giap-ty-ty-ty',
     moTa: 'Giáp Tý 1984, Nam, mùng 1 tháng Giêng giờ Tý',
     hoTen: 'Mẫu Giáp Tý',
