@@ -31,16 +31,37 @@ npm run build
 
 Xuất static (`out/`) — deploy Netlify. Cấu hình: `netlify.toml`.
 
-### Luận giải AI (Netlify)
+### Luận giải AI
 
-Trong Netlify Dashboard → Site settings → Environment variables:
+**Production (khuyến nghị)** — cấu hình trên Netlify, key không lộ ra người dùng:
 
+1. Tạo key tại [OpenAI API keys](https://platform.openai.com/api-keys)
+2. [Netlify → tuvi-dau-so-pro → Environment variables](https://app.netlify.com/projects/tuvi-dau-so-pro/configuration/env)
+3. Thêm biến:
+   - `OPENAI_API_KEY` = `sk-...`
+   - `OPENAI_MODEL` = `gpt-4o-mini` (tùy chọn)
+4. **Trigger deploy** lại site
+
+Hoặc dùng CLI (thay `sk-...` bằng key thật):
+
+```bash
+npx netlify env:set OPENAI_API_KEY "sk-..." --context production
+npx netlify env:set OPENAI_MODEL "gpt-4o-mini" --context production
 ```
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini   # tùy chọn
+
+Tab **AI** trên lá số sẽ hiện “Server AI sẵn sàng” khi cấu hình đúng.
+
+**Local** — chạy Next + Netlify Functions:
+
+```bash
+cp .env.example .env
+# Sửa OPENAI_API_KEY trong .env
+npm run dev:ai
 ```
 
-Chạy local với function: `npx netlify dev` (port 8888).
+Mở http://localhost:8888 (không phải port 3000).
+
+**Fallback** — trên tab AI, bấm **API Key** và nhập key OpenAI cá nhân (chỉ lưu trên trình duyệt).
 
 ## Cấu trúc
 
