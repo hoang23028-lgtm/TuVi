@@ -27,6 +27,14 @@ const FAQ_ITEMS = [
     q: 'Luận giải có thay thế thầy xem không?',
     a: 'Luận giải tự động dựa trên phương pháp truyền thống, giúp bạn hiểu sơ bộ. Để luận sâu về vận hạn cụ thể, nên tham khảo thêm chuyên gia có kinh nghiệm.',
   },
+  {
+    q: 'Có xuất PDF hoặc ảnh lá số không?',
+    a: 'Có. Sau khi lập lá số, dùng nút Ảnh PNG hoặc PDF trên đầu bảng lá số. Bạn cũng có thể in trực tiếp từ trình duyệt.',
+  },
+  {
+    q: 'Luận giải AI hoạt động thế nào?',
+    a: 'Tab AI gửi dữ liệu lá số lên server (Netlify Function) nếu đã cấu hình OPENAI_API_KEY, hoặc dùng API key OpenAI cá nhân lưu trên trình duyệt.',
+  },
 ];
 
 export default function Faq() {

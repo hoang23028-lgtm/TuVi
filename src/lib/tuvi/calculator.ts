@@ -1,9 +1,13 @@
 import {
   THIEN_CAN, DIA_CHI, CON_GIAP, CUNG_VI_TRI,
-  BANG_CUC, TEN_CUC, NAP_AM,
+  NAP_AM,
   getTuViPosition, NHOM_TU_VI_OFFSET, NHOM_THIEN_PHU_OFFSET,
   Star, Cung, TuViChart, TuHoaType,
 } from './constants';
+import { solarToLunar, LunarDate } from './lunar';
+import { getCanChiYear, getSolarYearForCanChi, isBeforeLapXuan } from './canChi';
+import { getCucFromMenhCung } from './cuc';
+import { anPhuTinhMoRong, apDungTuanTriet, anThienThuongThienSu } from './phuTinhExtended';
 
 const TU_HOA_THEO_CAN: Record<number, Record<TuHoaType, string>> = {
   0: { Lộc: 'Liêm Trinh', Quyền: 'Phá Quân', Khoa: 'Vũ Khúc', Kỵ: 'Thái Dương' },
@@ -28,7 +32,6 @@ function apDungTuHoa(canNam: number, cungs: Cung[]): void {
     }
   });
 }
-import { solarToLunar, getCanChiYear, getCanMonth } from './lunar';
 
 /**
  * Xác định vị trí Cung Mệnh
@@ -237,9 +240,6 @@ function anPhuTinh(
   stars.push({ name: 'Thiên Khốc', position: thienKhoc, type: 'phu_tinh_xau' });
   stars.push({ name: 'Thiên Hư', position: thienHu, type: 'phu_tinh_xau' });
   
-  // === Tuần, Triệt ===
-  // Đơn giản hóa - có thể bổ sung sau
-  
   return stars;
 }
 
@@ -323,39 +323,63 @@ function getThanChu(chiNam: number): string {
 /**
  * Tính toán lá số Tử Vi đầy đủ
  */
+export interface TinhLaSoOptions {
+  /** Nhập trực tiếp âm lịch (bỏ qua quy đổi từ ngày dương) */
+  amLich?: Pick<LunarDate, 'year' | 'month' | 'day' | 'isLeapMonth'>;
+  /** Can Chi năm theo Lập xuân (trước ~4/2 dương = năm trước) */
+  dungLapXuan?: boolean;
+}
+
 export function tinhLaSo(
   hoTen: string,
   gioiTinh: 'Nam' | 'Nữ',
   ngaySinh: Date,
-  gioSinh: number
+  gioSinh: number,
+  options?: TinhLaSoOptions,
 ): TuViChart {
-  // 1. Chuyển dương lịch sang âm lịch
-  const lunar = solarToLunar(
-    ngaySinh.getFullYear(),
-    ngaySinh.getMonth() + 1,
-    ngaySinh.getDate()
-  );
+  const lunar = options?.amLich
+    ? {
+        day: options.amLich.day,
+        month: options.amLich.month,
+        year: options.amLich.year,
+        isLeapMonth: options.amLich.isLeapMonth ?? false,
+        lunarYearCanChi: '',
+      }
+    : solarToLunar(
+        ngaySinh.getFullYear(),
+        ngaySinh.getMonth() + 1,
+        ngaySinh.getDate(),
+      );
   
-  // 2. Xác định Can Chi năm
-  const { can: canNam, chi: chiNam } = getCanChiYear(lunar.year);
+  const solarY = ngaySinh.getFullYear();
+  const solarM = ngaySinh.getMonth() + 1;
+  const solarD = ngaySinh.getDate();
+  const dungLapXuan = options?.dungLapXuan ?? false;
+
+  const yearForCanChi = dungLapXuan
+    ? getSolarYearForCanChi(solarY, solarM, solarD, true)
+    : lunar.year;
+
+  const { can: canNam, chi: chiNam } = getCanChiYear(yearForCanChi);
   const amDuong = canNam % 2 === 0 ? 'Dương' : 'Âm';
-  
-  // 3. Xác định Cung Mệnh
+
+  const truocLapXuan = dungLapXuan && isBeforeLapXuan(solarY, solarM, solarD);
+  const ghiChuCanChi = dungLapXuan
+    ? truocLapXuan
+      ? `Can Chi theo Lập xuân (trước 4/2: năm ${yearForCanChi})`
+      : `Can Chi theo Lập xuân (năm ${yearForCanChi})`
+    : `Can Chi theo năm âm lịch (${lunar.year})`;
+
   const cungMenhViTri = getCungMenhViTri(lunar.month, gioSinh);
-  
-  // 4. Xác định Cung Thân
   const cungThanViTri = getCungThanViTri(lunar.month, gioSinh);
-  
-  // 5. Xác định Cục
-  const cucNumber = BANG_CUC[canNam][cungMenhViTri];
-  const cucName = TEN_CUC[cucNumber];
-  
-  // 6. Ngũ hành Nạp Âm
+
+  const thienCanCung = anThienCanCung(canNam);
+  const thienCanMenh = thienCanCung[cungMenhViTri];
+  const diaChiMenh = DIA_CHI[cungMenhViTri];
+  const { cucNumber, cucName } = getCucFromMenhCung(thienCanMenh, diaChiMenh);
+
   const canChiNam = `${THIEN_CAN[canNam]} ${DIA_CHI[chiNam]}`;
   const nguHanh = NAP_AM[canChiNam] || 'Kim';
-  
-  // 7. An Thiên Can cho 12 cung
-  const thienCanCung = anThienCanCung(canNam);
   
   // 8. An chính tinh
   const viTriTuVi = getViTriTuVi(cucNumber, lunar.day);
@@ -393,6 +417,21 @@ export function tinhLaSo(
   for (const star of phuTinh) {
     cungs[star.position].stars.push({ name: star.name, type: star.type });
   }
+
+  const vanXuong = (10 - gioSinh + 12) % 12;
+  const vanKhuc = (4 + gioSinh) % 12;
+  const taPhu = (4 + lunar.month - 1) % 12;
+  const huuBat = (10 - lunar.month + 1 + 12) % 12;
+  const phuMoRong = anPhuTinhMoRong(
+    chiNam, lunar.month, gioSinh, lunar.day,
+    cungMenhViTri, cungThanViTri,
+    vanXuong, vanKhuc, taPhu, huuBat,
+  );
+  for (const star of phuMoRong) {
+    cungs[star.position].stars.push({ name: star.name, type: star.type });
+  }
+  anThienThuongThienSu(cungs);
+  apDungTuanTriet(canNam, chiNam, cungs);
   
   // 13. An Tràng Sinh
   const trangSinh = anTrangSinh(cucNumber, gioiTinh, amDuong);
@@ -414,21 +453,19 @@ export function tinhLaSo(
     cungs[cungDaiHan].daiHan = `${tuoiStart}-${tuoiEnd}`;
   }
   
-  // 16. Tính Tiểu Hạn
-  // Nam: khởi tại (Dần + chi năm) đi thuận
-  // Nữ: khởi tại (Dần + chi năm) đi nghịch
+  // 16. Tiểu Hạn — cùng chiều thuận/nghịch với Đại Hạn (âm dương + giới)
   const tieuHanStart = (2 + chiNam) % 12;
   const birthYear = lunar.year;
-  
+
   for (let tuoi = 1; tuoi <= 100; tuoi++) {
     const namDuongLich = birthYear + tuoi - 1;
     const offset = (tuoi - 1) % 12;
-    const tieuHanPos = gioiTinh === 'Nam'
-      ? (tieuHanStart + offset) % 12 
+    const tieuHanPos = isThuan
+      ? (tieuHanStart + offset) % 12
       : (tieuHanStart - offset + 12) % 12;
     cungs[tieuHanPos].tieuHan.push(namDuongLich);
   }
-  
+
   return {
     hoTen,
     gioiTinh,
@@ -452,5 +489,7 @@ export function tinhLaSo(
     cungMenhViTri,
     cungThanViTri,
     cungs,
+    dungLapXuan: dungLapXuan || undefined,
+    ghiChuCanChi,
   };
 }

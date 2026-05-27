@@ -159,15 +159,7 @@ export function solarToLunar(solarYear: number, solarMonth: number, solarDay: nu
   };
 }
 
-/**
- * Lấy Can Chi của năm
- */
-export function getCanChiYear(year: number): { can: number; chi: number } {
-  return {
-    can: (year - 4) % 10,
-    chi: (year - 4) % 12,
-  };
-}
+export { getCanChiYear, getSolarYearForCanChi, isBeforeLapXuan, getLapXuanDate } from './canChi';
 
 /**
  * Lấy Can Chi của tháng âm lịch
@@ -176,4 +168,38 @@ export function getCanMonth(yearCan: number, lunarMonth: number): number {
   // Công thức: Can tháng = (Can năm * 2 + tháng) % 10
   const startCan = (yearCan * 2 + 2) % 10;
   return (startCan + lunarMonth - 1) % 10;
+}
+
+/** Tháng nhuận của năm âm lịch (0 = không nhuận) */
+export function getLeapMonthOfYear(lunarYear: number): number {
+  const idx = lunarYear - 1900;
+  if (idx < 0 || idx >= LUNAR_DATA.length) return 0;
+  return LUNAR_DATA[idx] & 0xf;
+}
+
+/**
+ * Chuyển âm lịch sang dương lịch
+ */
+export function lunarToSolar(
+  lunarYear: number,
+  lunarMonth: number,
+  lunarDay: number,
+  isLeapMonth = false,
+): { year: number; month: number; day: number } {
+  const base = new Date(1900, 0, 31);
+  const maxDays = 80000;
+  for (let i = 0; i < maxDays; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    const lunar = solarToLunar(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    if (
+      lunar.year === lunarYear &&
+      lunar.month === lunarMonth &&
+      lunar.day === lunarDay &&
+      lunar.isLeapMonth === isLeapMonth
+    ) {
+      return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
+    }
+  }
+  throw new Error('Ngày âm lịch không hợp lệ');
 }

@@ -8,7 +8,10 @@
 - Quy đổi dương lịch → âm lịch (1900–2099, hỗ trợ tháng nhuận)
 - Luận giải từng cung, tổng quan (tính cách, sự nghiệp, tài lộc, tình cảm)
 - Đại Hạn & Tiểu Hạn theo năm
-- Lịch sử xem, chia sẻ link, in lá số
+- Nhập ngày **âm lịch** hoặc dương lịch (hỗ trợ tháng nhuận)
+- **Tuần / Triệt** và 20+ phụ tinh bổ sung (Ân Quang, Long Trì, Cô Quả...)
+- Xuất **PNG / PDF**, chia sẻ link, in lá số
+- **Luận giải AI** (Netlify Function + OpenAI, hoặc API key cá nhân)
 - Giao diện responsive (bàn lá số desktop + danh sách mobile)
 
 ## Chạy dự án
@@ -26,7 +29,18 @@ Mở [http://localhost:3000](http://localhost:3000).
 npm run build
 ```
 
-Xuất static (`out/`) — deploy Netlify/Vercel/GitHub Pages. Cấu hình mẫu: `netlify.toml`.
+Xuất static (`out/`) — deploy Netlify. Cấu hình: `netlify.toml`.
+
+### Luận giải AI (Netlify)
+
+Trong Netlify Dashboard → Site settings → Environment variables:
+
+```
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini   # tùy chọn
+```
+
+Chạy local với function: `npx netlify dev` (port 8888).
 
 ## Cấu trúc
 

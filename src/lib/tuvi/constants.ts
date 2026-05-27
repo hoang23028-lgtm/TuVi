@@ -56,7 +56,7 @@ export const NAP_AM: Record<string, string> = {
   'Nhâm Tuất': 'Thủy', 'Quý Hợi': 'Thủy',
 };
 
-// Bảng tra Cục theo Can năm và Cung Mệnh
+// Bảng tra Cục theo Can năm và Cung Mệnh (tham khảo — engine dùng getCucFromMenhCung / nạp âm cung Mệnh)
 // Index: [canIndex][cungMenhDiaChi]
 // Can: 0=Giáp,1=Ất,...9=Quý
 // Cung: 0=Tý,1=Sửu,...11=Hợi
@@ -126,6 +126,8 @@ export interface Cung {
   stars: Star[];        // Các sao trong cung
   daiHan: string;       // Đại hạn
   tieuHan: number[];    // Các năm Tiểu Hạn rơi vào cung này
+  tuan?: boolean;       // Cung Tuần (không)
+  triet?: boolean;      // Cung Triệt (không)
 }
 
 export interface TuViChart {
@@ -146,6 +148,10 @@ export interface TuViChart {
   cungMenhViTri: number; // Vị trí Địa Chi của cung Mệnh (0=Tý)
   cungThanViTri: number; // Vị trí Địa Chi của cung Thân
   cungs: Cung[];
+  /** Đã tính Can Chi theo Lập xuân (dương lịch) */
+  dungLapXuan?: boolean;
+  /** Ghi chú năm Can Chi (Tết vs Lập xuân) */
+  ghiChuCanChi?: string;
 }
 
 // Tính vị trí sao Tử Vi theo Cục và ngày sinh âm lịch

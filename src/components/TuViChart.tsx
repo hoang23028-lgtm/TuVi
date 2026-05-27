@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { TuViChart as TuViChartType, Cung, Star, GIO_SINH, CUNG_VI_TRI } from '@/lib/tuvi/constants';
 import { luanGiaiCung } from '@/lib/tuvi/interpretation';
 import ChartSummary from '@/components/ChartSummary';
+import ExportButtons from '@/components/ExportButtons';
+import AiInterpretation from '@/components/AiInterpretation';
 
 const HOA_BADGE: Record<string, string> = {
   Lộc: 'bg-green-600',
@@ -56,7 +58,15 @@ function CungCell({ cung, isActive, isMenh, isThan, isCurrentTieuHan, onClick }:
           {isMenh && <span className="text-red-600 ml-0.5">★</span>}
           {isThan && <span className="text-blue-600 ml-0.5">◆</span>}
         </span>
-        <span className="cung-diachi">{cung.thienCan} {cung.diaChi}</span>
+        <span className="cung-diachi flex flex-col items-end gap-0.5">
+          <span>{cung.thienCan} {cung.diaChi}</span>
+          {(cung.tuan || cung.triet) && (
+            <span className="flex gap-0.5">
+              {cung.tuan && <span className="text-[0.55rem] font-bold text-gray-500 bg-gray-200 px-0.5 rounded">Tuần</span>}
+              {cung.triet && <span className="text-[0.55rem] font-bold text-gray-600 bg-gray-300 px-0.5 rounded">Triệt</span>}
+            </span>
+          )}
+        </span>
       </div>
 
       {/* Chính tinh */}
@@ -103,12 +113,14 @@ function CungCell({ cung, isActive, isMenh, isThan, isCurrentTieuHan, onClick }:
   );
 }
 
-type TabType = 'chart' | 'overview' | 'yearly';
+type TabType = 'chart' | 'overview' | 'yearly' | 'ai';
 
 export default function TuViChartComponent({ chart }: TuViChartProps) {
+  const exportRef = useRef<HTMLDivElement>(null);
   const [activeCung, setActiveCung] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('chart');
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const exportFileName = `la-so-${chart.hoTen.replace(/\s+/g, '-')}`;
 
   const gridPositions = useMemo(() => [
     { row: 0, col: 0, diaChiIndex: 5 },
@@ -157,10 +169,15 @@ export default function TuViChartComponent({ chart }: TuViChartProps) {
     { id: 'chart', label: 'Lá Số', icon: '⬡' },
     { id: 'overview', label: 'Tổng Quan', icon: '📋' },
     { id: 'yearly', label: 'Vận Hạn', icon: '📅' },
+    { id: 'ai', label: 'AI', icon: '🤖' },
   ];
 
   return (
     <div className="w-full animate-fade-in">
+      <div className="flex flex-wrap justify-end mb-2 no-print">
+        <ExportButtons targetRef={exportRef} fileName={exportFileName} />
+      </div>
+      <div ref={exportRef} className="export-chart-area bg-[#fffef7] p-2 rounded-lg">
       {/* Thông tin tổng quan */}
       <div className="bg-gradient-to-r from-amber-50 to-red-50 rounded-xl p-4 mb-4 border border-amber-200">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -186,6 +203,9 @@ export default function TuViChartComponent({ chart }: TuViChartProps) {
           <div>
             <span className="text-gray-500">Năm:</span>
             <p className="font-bold text-gray-800">{chart.thienCan} {chart.diaChi} (tuổi {chart.conGiap})</p>
+            {chart.ghiChuCanChi && (
+              <p className="text-xs text-blue-600 mt-0.5">{chart.ghiChuCanChi}</p>
+            )}
           </div>
           <div>
             <span className="text-gray-500">Ngũ Hành:</span>
@@ -350,6 +370,10 @@ export default function TuViChartComponent({ chart }: TuViChartProps) {
             <span className="flex items-center gap-1">
               <sup className="text-[0.55rem] text-white bg-green-600 px-0.5 rounded">Lộc</sup>
               <span>Tứ Hóa</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="text-[0.55rem] font-bold bg-gray-200 px-0.5 rounded">Tuần</span>
+              <span className="text-[0.55rem] font-bold bg-gray-300 px-0.5 rounded">Triệt</span>
             </span>
           </div>
 
@@ -637,6 +661,9 @@ export default function TuViChartComponent({ chart }: TuViChartProps) {
           </div>
         </div>
       )}
+
+      {activeTab === 'ai' && <AiInterpretation chart={chart} />}
+      </div>
     </div>
   );
 }

@@ -242,6 +242,14 @@ export function luanGiaiCung(cung: Cung, cungName: string): Interpretation {
   if (phuTinhXau.length > 0) {
     overview += ` Có ${phuTinhXau.map(s => s.name).join(', ')} ảnh hưởng.`;
   }
+  if (cung.tuan) {
+    overview += ' Cung Tuần — khí lực sao giảm, cần xem cung đối xứng.';
+    totalRating = Math.max(1, totalRating - 1);
+  }
+  if (cung.triet) {
+    overview += ' Cung Triệt — trở ngại, chậm trễ, nên kiên nhẫn.';
+    totalRating = Math.max(1, totalRating - 1);
+  }
   
   return { overview, details, rating: totalRating };
 }

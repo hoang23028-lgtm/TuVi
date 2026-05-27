@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import BirthForm from '@/components/BirthForm';
 import TuViChartComponent from '@/components/TuViChart';
 import Faq from '@/components/Faq';
+import DisclaimerBanner from '@/components/DisclaimerBanner';
 import { tinhLaSo, TuViChart } from '@/lib/tuvi';
 
 interface SavedChart {
@@ -82,11 +83,16 @@ function HomeContent() {
     gioiTinh: 'Nam' | 'Nữ';
     ngaySinh: Date;
     gioSinh: number;
+    calendarMode?: 'duong' | 'am';
+    amLich?: { year: number; month: number; day: number; isLeapMonth: boolean };
+    dungLapXuan?: boolean;
   }) => {
     setIsCalculating(true);
-    // Tiny delay for animation to show
     setTimeout(() => {
-      const result = tinhLaSo(data.hoTen, data.gioiTinh, data.ngaySinh, data.gioSinh);
+      const result = tinhLaSo(data.hoTen, data.gioiTinh, data.ngaySinh, data.gioSinh, {
+        amLich: data.amLich,
+        dungLapXuan: data.dungLapXuan,
+      });
       setChart(result);
       setShowForm(false);
       setIsCalculating(false);
@@ -171,6 +177,9 @@ function HomeContent() {
           Tử Vi Đẩu Số
         </h1>
         <p className="text-gray-500 mt-2 text-sm md:text-lg">Lập lá số trọn đời theo phương pháp cổ truyền</p>
+        <div className="max-w-xl mx-auto mt-4 px-2">
+          <DisclaimerBanner compact />
+        </div>
       </header>
 
       <div className="max-w-7xl mx-auto">
@@ -288,6 +297,9 @@ function HomeContent() {
               </div>
             </div>
 
+            <div className="mb-4">
+              <DisclaimerBanner />
+            </div>
             {chart && <TuViChartComponent chart={chart} />}
           </div>
         )}
